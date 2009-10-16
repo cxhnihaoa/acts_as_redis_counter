@@ -6,7 +6,7 @@ The acts_as_redis_counter plugin implements high performance counters using writ
 
 Install Redis server (http://code.google.com/p/redis/) and redis-rb gem from http://github.com/ezmobius/redis-rb
 
-Install acts_as_redis_couter plugin:
+Install acts_as_redis_counter plugin:
 
   script/plugin install git://github.com/vitalie/acts_as_redis_counter.git
 
