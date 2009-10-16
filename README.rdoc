@@ -1,13 +1,67 @@
-ActsAsRedisCounter
-==================
+= acts_as_redis_counter
 
-Introduction goes here.
+The acts_as_redis_counter plugin implements high performance counters using write-back strategy with Redis key-value database.
+
+=== Installation
+
+  Install Redis server (http://code.google.com/p/redis/) and redis-rb gem from http://github.com/ezmobius/redis-rb
+
+  script/plugin install git://github.com/vitalie/acts_as_redis_counter.git
 
 
-Example
-=======
+=== Howto use acts_as_redis_counter
 
-Example goes here.
+Create migrations for your counters:
+
+  class PostsAddViewsCountColumn < ActiveRecord::Migration
+    def self.up
+      add_column :posts, :views_count, :integer, :default => 0
+    end
+
+    def self.down
+      remove_column :posts, :views_count
+    end
+  end
 
 
-Copyright (c) 2009 [name of plugin creator], released under the MIT license
+Define your Redis global connection in config/environment.rb:
+
+  Rails::Initializer.run do |config|
+    config.gem "redis"
+    ...
+    config.after_initialize do
+      REDIS = Redis.new :host => '127.0.0.1'
+    end
+  end
+
+
+In your models use *acts_as_redis_counter* to define your Redis counters.
+
+  # optional parametters :ttl and :hits
+  # writes to database will be delayed until one of the
+  # conditions are meet *ttl* seconds or new *hits* number
+  # Defaults:
+  #  - ttl: 5.minutes
+  #  - hits: 100
+
+  class Post < ActiveRecord::Base
+    acts_as_redis_counter :views_count, :ttl => 5.minutes, :hits => 100
+    ...
+  end
+
+You can specify multiple counters on the same model:
+
+  class Post < ActiveRecord::Base
+    acts_as_redis_counter :views_count, :edits_count
+    ...
+  end
+
+In your controllers increment and read your counters using plugin defined methods redis_counter_#{attribute} and redis_counter_#{attribute}_inc:
+
+  # increment counter
+  @post.redis_counter_views_count_inc
+
+  # read counter
+  @post.redis_counter_views_count
+
+
